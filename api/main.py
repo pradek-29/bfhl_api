@@ -19,6 +19,10 @@ def alternating_caps(s: str) -> str:
             result += ch
     return result
 
+@app.get("/")
+async def root():
+    return {"message": "API is working! Visit /docs for testing."}
+
 @app.post("/bfhl")
 async def process_data(input_data: InputData):
     data = input_data.data
