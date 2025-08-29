@@ -1,40 +1,38 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from typing import List, Any
 
 app = FastAPI()
 
-@app.post("/")
-async def process_data(request: Request):
-    try:
-        # Get JSON data from request
-        data = await request.json()
-        input_array = data.get("input", [])
-
-        # Separate values
-        even_numbers = [x for x in input_array if isinstance(x, int) and x % 2 == 0]
-        odd_numbers = [x for x in input_array if isinstance(x, int) and x % 2 != 0]
-        alphabets = [x.upper() for x in input_array if isinstance(x, str) and x.isalpha()]
-        special_chars = [x for x in input_array if isinstance(x, str) and not x.isalnum()]
-        sum_numbers = sum([x for x in input_array if isinstance(x, int)])
-        reversed_alpha_concat = "".join([x for x in input_array if isinstance(x, str) and x.isalpha()])[::-1].upper()
-
-        # Response JSON
-        return JSONResponse({
-            "status": "success",
-            "user_id": "123456",
-            "email": "example@vit.ac.in",
-            "roll_number": "22BCE0000",
-            "even_numbers": even_numbers,
-            "odd_numbers": odd_numbers,
-            "alphabets_uppercase": alphabets,
-            "special_characters": special_chars,
-            "sum_of_numbers": sum_numbers,
-            "reversed_alphabets_concat": reversed_alpha_concat
-        })
-
-    except Exception as e:
-        return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
+class InputData(BaseModel):
+    data: List[Any]
 
 @app.get("/")
-async def home():
-    return {"message": "API is working!"}
+def home():
+    return {"message": "API is working fine!"}
+
+@app.post("/process")
+def process_array(input_data: InputData):
+    data = input_data.data
+    numbers = [x for x in data if isinstance(x, (int, float))]
+    alphabets = [x.upper() for x in data if isinstance(x, str) and x.isalpha()]
+    special_chars = [x for x in data if isinstance(x, str) and not x.isalnum()]
+
+    even_nums = [x for x in numbers if isinstance(x, int) and x % 2 == 0]
+    odd_nums = [x for x in numbers if isinstance(x, int) and x % 2 != 0]
+    sum_nums = sum(numbers)
+    concat_alpha = "".join(alphabets)[::-1]
+
+    return JSONResponse(content={
+        "status": "success",
+        "user_id": "123456",
+        "email": "abc@example.com",
+        "college_roll": "21BCE0000",
+        "even_numbers": even_nums,
+        "odd_numbers": odd_nums,
+        "alphabets": alphabets,
+        "special_characters": special_chars,
+        "sum_of_numbers": sum_nums,
+        "reversed_alphabets": concat_alpha
+    })
